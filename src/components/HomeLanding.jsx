@@ -53,7 +53,36 @@ export default function HomeLanding() {
       {/* Right Content Area */}
       <div className="w-full lg:max-w-4xl flex flex-col items-center lg:items-start">
 
- 
+        Responsive Banner Image
+        <picture className="w-full">
+          <source media="(max-width: 640px)" srcSet="/banner 3-mobile.png" />
+          <img
+            src="/banner 3.png"
+            alt="Watch Banner"
+            fetchPriority="high"
+            decoding="async"
+            className="
+    w-screen
+    max-w-none
+    h-auto
+    object-contain
+    select-none
+    pointer-events-none
+
+    /* Mobile */
+    -mx-4
+    sm:mx-0
+
+    /* Tablet */
+    sm:w-full
+    sm:px-4
+    md:px-6
+
+    /* Desktop */
+    lg:px-0
+  "
+          />
+        </picture>
 
 
 
@@ -61,7 +90,7 @@ export default function HomeLanding() {
         <div id="home-filters" className="flex flex-col md:flex-row gap-6 mt-3 md:mt-6 w-full justify-center lg:justify-start items-center md:items-start">
           {/* <PriceFilter price={price} setPrice={setPrice} /> */}
           <div className="w-full max-w-[320px] flex flex-col gap-4">
-            <BrandFilter selected={brand} setSelected={setBrand} />
+            {/* <BrandFilter selected={brand} setSelected={setBrand} /> */}
             <CategoryFilter selected={category} setSelected={setCategory} />
             {/* Premium Search Button with Ticking Watch Dial Complication */}
             <button
