@@ -93,26 +93,7 @@ export default function HomeLanding() {
             <BrandFilter selected={brand} setSelected={setBrand} />
             <CategoryFilter selected={category} setSelected={setCategory} />
             {/* Premium Search Button with Ticking Watch Dial Complication */}
-            <button
-              onClick={handleSearch}
-              className="self-center w-48 relative py-2.5 px-4 rounded-xl bg-black text-white hover:bg-white hover:text-black font-black uppercase tracking-[0.25em] text-[9px] flex items-center justify-center gap-2.5 transition-all duration-300 shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:shadow-[0_8px_20px_rgba(0,0,0,0.15)] hover:translate-y-[-1px] active:scale-[0.97] border border-black overflow-hidden group cursor-pointer"
-            >
-              {/* Mechanical Watch Second-Hand Sub-dial Icon */}
-              <div className="relative w-3.5 h-3.5 rounded-full border border-current flex items-center justify-center shrink-0">
-                {/* 12, 3, 6, 9 markers */}
-                <div className="absolute top-0 w-[1px] h-[2px] bg-current/40"></div>
-                <div className="absolute right-0 w-[2px] h-[1px] bg-current/40"></div>
-                <div className="absolute bottom-0 w-[1px] h-[2px] bg-current/40"></div>
-                <div className="absolute left-0 w-[2px] h-[1px] bg-current/40"></div>
-                {/* Static watch hand */}
-                <div
-                  className="absolute w-[1px] h-[5px] bg-current origin-bottom bottom-1/2 rounded-full rotate-45"
-                ></div>
-                {/* Hub */}
-                <div className="absolute w-0.5 h-0.5 bg-current rounded-full"></div>
-              </div>
-              <span className="relative z-20">Search Matches</span>
-            </button>
+           
           </div>
         </div>
 
