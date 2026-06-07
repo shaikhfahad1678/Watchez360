@@ -62,19 +62,18 @@ export default function HomeLanding() {
             fetchPriority="high"
             decoding="async"
             className="
-    w-screen
+    w-[calc(100%+3rem)]
     max-w-none
+    -mx-6
     h-auto
     object-contain
     select-none
     pointer-events-none
 
-    /* Mobile */
-    -mx-4
-    sm:mx-0
-
     /* Tablet */
+    sm:mx-0
     sm:w-full
+    sm:max-w-full
     sm:px-4
     md:px-6
 
