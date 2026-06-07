@@ -88,7 +88,7 @@ export default function HomeLanding() {
 
         {/* Filters Layout - Stacked & Centered on mobile, side-by-side on tablet/desktop */}
         <div id="home-filters" className="flex flex-col md:flex-row gap-6 mt-3 md:mt-6 w-full justify-center lg:justify-start items-center md:items-start">
-          {/* <PriceFilter price={price} setPrice={setPrice} /> */}
+          <PriceFilter price={price} setPrice={setPrice} />
           <div className="w-full max-w-[320px] flex flex-col gap-4">
             <BrandFilter selected={brand} setSelected={setBrand} />
             <CategoryFilter selected={category} setSelected={setCategory} />
