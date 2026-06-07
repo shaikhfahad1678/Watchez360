@@ -9,7 +9,7 @@ export default function Featured() {
 
   useEffect(() => {
     const fetchFeatured = async () => {
-      const apiHost = `http://${window.location.hostname}:8000`;
+      const apiHost = process.env.NEXT_PUBLIC_API_URL || "http://140.245.10.48:8000";
       try {
         const res = await fetch(`${apiHost}/api/v1/product/section/Featured`);
         const result = await res.json();

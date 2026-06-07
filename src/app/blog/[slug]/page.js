@@ -5,7 +5,7 @@ export async function generateMetadata({ params }) {
   
   let blog = null;
   try {
-    const apiHost = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+    const apiHost = process.env.NEXT_PUBLIC_API_URL || "http://140.245.10.48:8000";
     const [blogsRes, topListsRes] = await Promise.all([
       fetch(`${apiHost}/api/v1/blog`, { next: { revalidate: 60 } }).then(res => res.ok ? res.json() : null),
       fetch(`${apiHost}/api/v1/top-list`, { next: { revalidate: 60 } }).then(res => res.ok ? res.json() : null)

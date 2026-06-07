@@ -48,7 +48,7 @@ const Card = memo(function Card({ product = {} }) {
       return;
     }
     try {
-      const apiHost = `http://${window.location.hostname}:8000`;
+      const apiHost = process.env.NEXT_PUBLIC_API_URL || "http://140.245.10.48:8000";
       const res = await fetch(`${apiHost}/api/v1/user/collection/add`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

@@ -127,7 +127,7 @@ export default function Product() {
   useEffect(() => {
     if (!dbProduct && id) {
       setLoading(true);
-      const apiHost = `http://${window.location.hostname}:8000`;
+      const apiHost = process.env.NEXT_PUBLIC_API_URL || "http://140.245.10.48:8000";
       fetch(`${apiHost}/api/v1/product/${id}`)
         .then((res) => res.json())
         .then((res) => {
@@ -170,7 +170,7 @@ export default function Product() {
       return;
     }
     try {
-      const apiHost = `http://${window.location.hostname}:8000`;
+      const apiHost = process.env.NEXT_PUBLIC_API_URL || "http://140.245.10.48:8000";
       const res = await fetch(`${apiHost}/api/v1/user/collection/add`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -192,7 +192,7 @@ export default function Product() {
 
   useEffect(() => {
     if (!dbProduct?._id) return;
-    const apiHost = `http://${window.location.hostname}:8000`;
+    const apiHost = process.env.NEXT_PUBLIC_API_URL || "http://140.245.10.48:8000";
 
     // 1. Increment product views (always, logged in or not)
     fetch(`${apiHost}/api/v1/product/view/${dbProduct._id}`, {
@@ -210,7 +210,7 @@ export default function Product() {
 
   const handleLinkClick = () => {
     if (!dbProduct?._id) return;
-    const apiHost = `http://${window.location.hostname}:8000`;
+    const apiHost = process.env.NEXT_PUBLIC_API_URL || "http://140.245.10.48:8000";
     fetch(`${apiHost}/api/v1/product/click/${dbProduct._id}`, {
       method: "POST",
     }).catch((err) => console.error("Error tracking link click:", err));

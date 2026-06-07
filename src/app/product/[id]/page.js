@@ -5,7 +5,7 @@ export async function generateMetadata({ params }) {
   
   let product = null;
   try {
-    const apiHost = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+    const apiHost = process.env.NEXT_PUBLIC_API_URL || "http://140.245.10.48:8000";
     const res = await fetch(`${apiHost}/api/v1/product/${id}`);
     if (res.ok) {
       const result = await res.json();

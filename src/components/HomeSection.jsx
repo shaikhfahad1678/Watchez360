@@ -9,7 +9,7 @@ export default function HomeSection() {
   const [loading, setLoading] = useState(true);
   useEffect(() => {
     const fetchSections = async () => {
-      const apiHost = `http://${window.location.hostname}:8000`;
+      const apiHost = process.env.NEXT_PUBLIC_API_URL || "http://140.245.10.48:8000";
       try {
         // 1. Fetch Featured Section
         const featuredRes = await fetch(`${apiHost}/api/v1/product/section/Featured`);

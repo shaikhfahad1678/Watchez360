@@ -35,7 +35,7 @@ export default function SearchResults() {
     const handler = setTimeout(() => {
       const fetchSearchResults = async () => {
         setLoading(true);
-        const apiHost = `http://${window.location.hostname}:8000`;
+        const apiHost = process.env.NEXT_PUBLIC_API_URL || "http://140.245.10.48:8000";
         try {
           let url = `${apiHost}/api/v1/product`;
           
