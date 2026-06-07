@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback, memo } from "react";
 import { Search } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import PriceFilter from "./PriceFilter";
@@ -53,7 +53,7 @@ export default function HomeLanding() {
       {/* Right Content Area */}
       <div className="w-full lg:max-w-4xl flex flex-col items-center lg:items-start">
 
-        Responsive Banner Image
+        {/* Responsive Banner Image */}
         <picture className="w-full">
           <source media="(max-width: 640px)" srcSet="/banner 3-mobile.png" />
           <img
@@ -90,12 +90,12 @@ export default function HomeLanding() {
         <div id="home-filters" className="flex flex-col md:flex-row gap-6 mt-3 md:mt-6 w-full justify-center lg:justify-start items-center md:items-start">
           {/* <PriceFilter price={price} setPrice={setPrice} /> */}
           <div className="w-full max-w-[320px] flex flex-col gap-4">
-            {/* <BrandFilter selected={brand} setSelected={setBrand} /> */}
+            <BrandFilter selected={brand} setSelected={setBrand} />
             <CategoryFilter selected={category} setSelected={setCategory} />
             {/* Premium Search Button with Ticking Watch Dial Complication */}
             <button
               onClick={handleSearch}
-              className="self-center w-48 relative py-2.5 px-4 rounded-xl bg-black text-white hover:bg-white hover:text-black font-black uppercase tracking-[0.25em] text-[9px] flex items-center justify-center gap-2.5 transition-all duration-300 shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:shadow-[0_8px_20px_rgba(0,0,0,0.15)] hover:translate-y-[-1px] active:scale-[0.97] border border-black overflow-hidden group cursor-pointer"
+              className="self-center w-48 relative py-2.5 px-4 rounded-xl bg-black text-white hover:bg-white hover:text-black font-black uppercase tracking-[0.25em] text-[9px] flex items-center justify-center gap-2.5 transition-[background-color,color,transform,box-shadow] duration-300 shadow-[0_4px_12px_rgba(0,0,0,0.08)] hover:shadow-[0_8px_20px_rgba(0,0,0,0.15)] hover:translate-y-[-1px] active:scale-[0.97] border border-black overflow-hidden group cursor-pointer"
             >
               {/* Mechanical Watch Second-Hand Sub-dial Icon */}
               <div className="relative w-3.5 h-3.5 rounded-full border border-current flex items-center justify-center shrink-0">
@@ -124,11 +124,11 @@ export default function HomeLanding() {
 
 
 
-export function BrandFilter({ selected, setSelected }) {
+export const BrandFilter = memo(function BrandFilter({ selected, setSelected }) {
   const brands = ["All", "Titan", "Fastrack", "Casio", "Rolex", "Sonata", "Fossil", "Seiko"];
 
   return (
-    <div className="w-full max-w-[320px] pt-5 pb-4 px-5 bg-white/80 backdrop-blur-xl rounded-[2.5rem] shadow-[0_12px_40px_rgba(0,0,0,0.06)] border border-white">
+    <div className="w-full max-w-[320px] pt-5 pb-4 px-5 bg-white lg:bg-white/80 lg:backdrop-blur-xl rounded-[2.5rem] shadow-[0_12px_40px_rgba(0,0,0,0.06)] border border-white">
       <h2 className="text-sm font-bold uppercase tracking-wider text-black mb-4">Brands</h2>
       <div className="grid grid-cols-2 gap-3">
         {brands.map((brand) => {
@@ -151,13 +151,13 @@ export function BrandFilter({ selected, setSelected }) {
       </div>
     </div>
   );
-}
+});
 
-export function CategoryFilter({ selected, setSelected }) {
+export const CategoryFilter = memo(function CategoryFilter({ selected, setSelected }) {
   const options = ["All", "Analog", "Smart Watch", "Female", "Luxury"];
 
   return (
-    <div className="w-full max-w-[320px] pt-4 pb-3 px-5 bg-white/80 backdrop-blur-xl rounded-[1.75rem] shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-white flex flex-col gap-2.5">
+    <div className="w-full max-w-[320px] pt-4 pb-3 px-5 bg-white lg:bg-white/80 lg:backdrop-blur-xl rounded-[1.75rem] shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-white flex flex-col gap-2.5">
       <span className="text-[10px] font-black uppercase tracking-[0.25em] text-black pl-1">Category</span>
       <div className="flex flex-wrap gap-2">
         {options.map((option) => {
@@ -178,7 +178,7 @@ export function CategoryFilter({ selected, setSelected }) {
       </div>
     </div>
   );
-}
+});
 
 
 
