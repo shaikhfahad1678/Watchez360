@@ -117,6 +117,45 @@ const getLinkStyles = (label) => {
   };
 };
 
+const getResolvedImages = (product) => {
+  if (product?.images && product.images.length > 0) {
+    return [...product.images]
+      .sort((a, b) => (b.is_main ? 1 : 0) - (a.is_main ? 1 : 0))
+      .map((img) => img.url);
+  }
+  return [
+    "https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcRDSGVPYjcIbgC2TcaURidzP_LNZWZqEDBD1U-IUbwtQN-YLZwoNugvKX0yEPxBNARVOHGLnXMZxsLxmZ7ipe5Q2pzE4TFuo6P2eApx-J9FXbvI8xi7c22umA",
+    "https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcQw7OrZGZgrbBkEDEKIOE1NB9hKgxq819aPBqMvmz6oTqIl7q2my82ufZChJtmg2d1GsvwhRjC8geBvjk4JociI4bOewShFiwCmqPUk1kCxhOxltMFHTAcEu-1F",
+    "https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcRsEuTalyrc53qV6NG4Yo0zd87aJNKP0BXVensp6GWW19I_Glo4OHmqI2y7h7krki2-ajdRkKRCM6DCQn-a4h3XxmlbnW2CYWOdvyxr_6S2nNnqz2mpI9ZcwXnQ",
+    "https://encrypted-tbn2.gstatic.com/shopping?q=tbn:ANd9GcQqYDBtw8x13hRvaecIYLOWarLkY1sje9d_MNJhHP2pJkzUSKAAJZHffs5Eunzc0RnaX4pbqhu1Py_wH25W5gtwPF9noZ_d8rqeUJBCygh7clQ3YzC41XhxWoE",
+  ];
+};
+
+const getResolvedColors = (product) => {
+  if (product?.color) {
+    return product.color
+      .split(",")
+      .map((c) => c.trim())
+      .filter(Boolean)
+      .map((c) => ({
+        name: c,
+        hex:
+          c.toLowerCase() === "black" ? "#1A1A1A" :
+          c.toLowerCase() === "silver" ? "#D8D8D8" :
+          c.toLowerCase() === "gold" ? "#DFBA73" :
+          c.toLowerCase() === "rose gold" ? "#E0A899" :
+          c.toLowerCase() === "steel" ? "#B0C4DE" :
+          c.toLowerCase() === "blue" ? "#223E6C" :
+          c.toLowerCase() === "green" ? "#2E8B57" :
+          c.toLowerCase() === "white" ? "#FFFFFF" :
+          c.toLowerCase() === "grey" ? "#808080" :
+          c.toLowerCase() === "brown" ? "#8B4513" :
+          c.toLowerCase() === "red" ? "#FF0000" : "#CCCCCC",
+      }));
+  }
+  return colors;
+};
+
 export default function Product() {
   const location = useLocation();
   const { id } = useParams();
@@ -124,10 +163,37 @@ export default function Product() {
   const [dbProduct, setDbProduct] = useState(location.state?.product || null);
   const [loading, setLoading] = useState(!dbProduct && !!id);
 
+  const initialImages = getResolvedImages(dbProduct);
+  const initialColors = getResolvedColors(dbProduct);
+
+  const [mainImage, setMainImage] = useState(initialImages[0] || "");
+  const [hoveredSpec, setHoveredSpec] = useState(null);
+  const [selectedColor, setSelectedColor] = useState(
+    initialColors[0] || { name: "Default", hex: "#CCCCCC" }
+  );
+
+  // Track previous id to reset state when id changes
+  const [prevId, setPrevId] = useState(id);
+  if (id !== prevId) {
+    setPrevId(id);
+    const initialProd = location.state?.product || null;
+    setDbProduct(initialProd);
+    setLoading(!initialProd && !!id);
+  }
+
+  // Track previous dbProduct to sync UI states when product changes
+  const [prevDbProduct, setPrevDbProduct] = useState(dbProduct);
+  if (dbProduct !== prevDbProduct) {
+    setPrevDbProduct(dbProduct);
+    const imgs = getResolvedImages(dbProduct);
+    setMainImage(imgs[0] || "");
+    const cols = getResolvedColors(dbProduct);
+    setSelectedColor(cols[0] || { name: "Default", hex: "#CCCCCC" });
+  }
+
   useEffect(() => {
     if (!dbProduct && id) {
-      setLoading(true);
-      const apiHost = process.env.NEXT_PUBLIC_API_URL || "http://140.245.10.48:8000";
+      const apiHost = process.env.NEXT_PUBLIC_API_URL || "/api";
       fetch(`${apiHost}/api/v1/product/${id}`)
         .then((res) => res.json())
         .then((res) => {
@@ -139,6 +205,24 @@ export default function Product() {
         .finally(() => setLoading(false));
     }
   }, [id, dbProduct]);
+
+  useEffect(() => {
+    if (!dbProduct?._id) return;
+    const apiHost = process.env.NEXT_PUBLIC_API_URL || "/api";
+
+    // 1. Increment product views (always, logged in or not)
+    fetch(`${apiHost}/api/v1/product/view/${dbProduct._id}`, {
+      method: "POST",
+    }).catch((err) => console.error("Error updating views:", err));
+
+    // 2. Add to recent products list (only if logged in)
+    fetch(`${apiHost}/api/v1/user/recent/add`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ watchId: dbProduct._id }),
+      credentials: "include",
+    }).catch((err) => console.error("Error updating recent products:", err));
+  }, [dbProduct?._id]);
 
   if (loading) {
     return (
@@ -170,7 +254,7 @@ export default function Product() {
       return;
     }
     try {
-      const apiHost = process.env.NEXT_PUBLIC_API_URL || "http://140.245.10.48:8000";
+      const apiHost = process.env.NEXT_PUBLIC_API_URL || "/api";
       const res = await fetch(`${apiHost}/api/v1/user/collection/add`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -190,27 +274,9 @@ export default function Product() {
     }
   };
 
-  useEffect(() => {
-    if (!dbProduct?._id) return;
-    const apiHost = process.env.NEXT_PUBLIC_API_URL || "http://140.245.10.48:8000";
-
-    // 1. Increment product views (always, logged in or not)
-    fetch(`${apiHost}/api/v1/product/view/${dbProduct._id}`, {
-      method: "POST",
-    }).catch((err) => console.error("Error updating views:", err));
-
-    // 2. Add to recent products list (only if logged in)
-    fetch(`${apiHost}/api/v1/user/recent/add`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ watchId: dbProduct._id }),
-      credentials: "include",
-    }).catch((err) => console.error("Error updating recent products:", err));
-  }, [dbProduct?._id]);
-
   const handleLinkClick = () => {
     if (!dbProduct?._id) return;
-    const apiHost = process.env.NEXT_PUBLIC_API_URL || "http://140.245.10.48:8000";
+    const apiHost = process.env.NEXT_PUBLIC_API_URL || "/api";
     fetch(`${apiHost}/api/v1/product/click/${dbProduct._id}`, {
       method: "POST",
     }).catch((err) => console.error("Error tracking link click:", err));
@@ -220,22 +286,9 @@ export default function Product() {
   const name = dbProduct?.model_name || dbProduct?.name || "Titan Karishma Analog Black Dial Men's Watch";
   const description = dbProduct?.description || "A masterpiece of modern watchmaking, the Submariner Classic merges iconic vintage design codes with high-precision engineering. Built for explorers, enthusiasts, and collectors alike, it features an incredible level of polish and visual excellence that adapts seamlessly from active outdoor pursuits to sophisticated formal evenings.";
   
-  let resolvedImages = [];
-  if (dbProduct?.images && dbProduct.images.length > 0) {
-    resolvedImages = [...dbProduct.images]
-      .sort((a, b) => (b.is_main ? 1 : 0) - (a.is_main ? 1 : 0))
-      .map(img => img.url);
-  } else {
-    resolvedImages = [
-      "https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcRDSGVPYjcIbgC2TcaURidzP_LNZWZqEDBD1U-IUbwtQN-YLZwoNugvKX0yEPxBNARVOHGLnXMZxsLxmZ7ipe5Q2pzE4TFuo6P2eApx-J9FXbvI8xi7c22umA",
-      "https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcQw7OrZGZgrbBkEDEKIOE1NB9hKgxq819aPBqMvmz6oTqIl7q2my82ufZChJtmg2d1GsvwhRjC8geBvjk4JociI4bOewShFiwCmqPUk1kCxhOxltMFHTAcEu-1F",
-      "https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcRsEuTalyrc53qV6NG4Yo0zd87aJNKP0BXVensp6GWW19I_Glo4OHmqI2y7h7krki2-ajdRkKRCM6DCQn-a4h3XxmlbnW2CYWOdvyxr_6S2nNnqz2mpI9ZcwXnQ",
-      "https://encrypted-tbn2.gstatic.com/shopping?q=tbn:ANd9GcQqYDBtw8x13hRvaecIYLOWarLkY1sje9d_MNJhHP2pJkzUSKAAJZHffs5Eunzc0RnaX4pbqhu1Py_wH25W5gtwPF9noZ_d8rqeUJBCygh7clQ3YzC41XhxWoE",
-    ];
-  }
+  const resolvedImages = getResolvedImages(dbProduct);
 
-  const [mainImage, setMainImage] = useState(resolvedImages[0] || "");
-  const [hoveredSpec, setHoveredSpec] = useState(null);
+  const resolvedColors = getResolvedColors(dbProduct);
 
   let priceStr = "";
   if (dbProduct) {
@@ -243,28 +296,6 @@ export default function Product() {
   } else {
     priceStr = "₹8,499";
   }
-
-  let resolvedColors = [];
-  if (dbProduct?.color) {
-    resolvedColors = dbProduct.color.split(",").map(c => c.trim()).filter(Boolean).map(c => ({
-      name: c,
-      hex: c.toLowerCase() === "black" ? "#1A1A1A" :
-           c.toLowerCase() === "silver" ? "#D8D8D8" :
-           c.toLowerCase() === "gold" ? "#DFBA73" :
-           c.toLowerCase() === "rose gold" ? "#E0A899" :
-           c.toLowerCase() === "steel" ? "#B0C4DE" :
-           c.toLowerCase() === "blue" ? "#223E6C" :
-           c.toLowerCase() === "green" ? "#2E8B57" :
-           c.toLowerCase() === "white" ? "#FFFFFF" :
-           c.toLowerCase() === "grey" ? "#808080" :
-           c.toLowerCase() === "brown" ? "#8B4513" :
-           c.toLowerCase() === "red" ? "#FF0000" : "#CCCCCC"
-    }));
-  } else {
-    resolvedColors = colors;
-  }
-
-  const [selectedColor, setSelectedColor] = useState(resolvedColors[0] || { name: "Default", hex: "#CCCCCC" });
 
   const resolvedSpecs = [
     {

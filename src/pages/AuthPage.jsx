@@ -27,7 +27,7 @@ export default function Account() {
 
   const fetchUser = async () => {
     try {
-      const apiHost = process.env.NEXT_PUBLIC_API_URL || "http://140.245.10.48:8000";
+      const apiHost = process.env.NEXT_PUBLIC_API_URL || "/api";
       const res = await fetch(`${apiHost}/api/v1/user/me`, {
         credentials: "include",
       });
@@ -63,7 +63,7 @@ export default function Account() {
     setError("");
 
     try {
-      const apiHost = process.env.NEXT_PUBLIC_API_URL || "http://140.245.10.48:8000";
+      const apiHost = process.env.NEXT_PUBLIC_API_URL || "/api";
       const res = await fetch(`${apiHost}/api/v1/user/google-login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -148,7 +148,7 @@ export default function Account() {
     setLoading(true);
 
     try {
-      const apiHost = process.env.NEXT_PUBLIC_API_URL || "http://140.245.10.48:8000";
+      const apiHost = process.env.NEXT_PUBLIC_API_URL || "/api";
       const url = isLogin 
         ? `${apiHost}/api/v1/user/login`
         : `${apiHost}/api/v1/user/register`;
@@ -209,7 +209,7 @@ export default function Account() {
 
   const handleLogout = async () => {
     try {
-      const apiHost = process.env.NEXT_PUBLIC_API_URL || "http://140.245.10.48:8000";
+      const apiHost = process.env.NEXT_PUBLIC_API_URL || "/api";
       const res = await fetch(`${apiHost}/api/v1/user/logout`, {
         method: "POST",
         credentials: "include",

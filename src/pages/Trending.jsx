@@ -9,7 +9,7 @@ export default function Trending() {
 
   useEffect(() => {
     const fetchTrending = async () => {
-      const apiHost = process.env.NEXT_PUBLIC_API_URL || "http://140.245.10.48:8000";
+      const apiHost = process.env.NEXT_PUBLIC_API_URL || "/api";
       try {
         const res = await fetch(`${apiHost}/api/v1/product/section/Trending`);
         const result = await res.json();

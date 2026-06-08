@@ -19,7 +19,7 @@ export default function Blog() {
   useEffect(() => {
     const fetchBlogs = async () => {
       try {
-        const apiHost = process.env.NEXT_PUBLIC_API_URL || "http://140.245.10.48:8000";
+        const apiHost = process.env.NEXT_PUBLIC_API_URL || "/api";
         const [blogsRes, topListsRes] = await Promise.all([
           fetch(`${apiHost}/api/v1/blog`),
           fetch(`${apiHost}/api/v1/top-list`)

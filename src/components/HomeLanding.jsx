@@ -55,7 +55,7 @@ export default function HomeLanding() {
 
         {/* Responsive Banner Image */}
         <picture className="w-full">
-          <source media="(max-width: 640px)" srcSet="/banner 3-mobile.png" />
+          <source media="(max-width: 640px)" srcSet="/banner%203-mobile.png" />
           <img
             src="/banner 3.png"
             alt="Watch Banner"

@@ -9,7 +9,7 @@ export default function SmartWatches() {
 
   useEffect(() => {
     const fetchSmart = async () => {
-      const apiHost = process.env.NEXT_PUBLIC_API_URL || "http://140.245.10.48:8000";
+      const apiHost = process.env.NEXT_PUBLIC_API_URL || "/api";
       try {
         const res = await fetch(`${apiHost}/api/v1/product?category=Smart%20Watch`);
         const result = await res.json();
