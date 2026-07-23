@@ -1,55 +1,72 @@
+"use client";
+
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import Card from "./Card";
+import { getApiUrl } from "../utils/api";
 
-export default function HomeSection() {
-  const [featuredProducts, setFeaturedProducts] = useState([]);
-  const [trendingProducts, setTrendingProducts] = useState([]);
-  const [smartProducts, setSmartProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
+export default function HomeSection({
+  initialFeaturedProducts = [],
+  initialTrendingProducts = [],
+  initialSmartProducts = []
+}) {
+  const [featuredProducts, setFeaturedProducts] = useState(initialFeaturedProducts);
+  const [trendingProducts, setTrendingProducts] = useState(initialTrendingProducts);
+  const [smartProducts, setSmartProducts] = useState(initialSmartProducts);
+  const [loading, setLoading] = useState(
+    initialFeaturedProducts.length === 0 &&
+    initialTrendingProducts.length === 0 &&
+    initialSmartProducts.length === 0
+  );
+
   useEffect(() => {
-    const fetchSections = async () => {
-      const apiHost = process.env.NEXT_PUBLIC_API_URL || "/api";
-      try {
-        // 1. Fetch Featured Section
-        const featuredRes = await fetch(`${apiHost}/api/v1/product/section/Featured`);
-        const featuredData = await featuredRes.json();
-        if (featuredData.success && featuredData.data?.products?.length > 0) {
-          setFeaturedProducts(featuredData.data.products);
-        } else {
-          const backupRes = await fetch(`${apiHost}/api/v1/product?limit=4`);
-          const backupData = await backupRes.json();
-          setFeaturedProducts(backupData.data || []);
-        }
+    if (
+      featuredProducts.length === 0 &&
+      trendingProducts.length === 0 &&
+      smartProducts.length === 0
+    ) {
+      const fetchSections = async () => {
+        try {
+          // 1. Fetch Featured Section
+          const featuredRes = await fetch(getApiUrl("/api/v1/product/section/Featured"));
+          const featuredData = await featuredRes.json();
+          if (featuredData.success && featuredData.data?.products?.length > 0) {
+            setFeaturedProducts(featuredData.data.products);
+          } else {
+            const backupRes = await fetch(getApiUrl("/api/v1/product?limit=4"));
+            const backupData = await backupRes.json();
+            setFeaturedProducts(backupData.data || []);
+          }
 
-        // 2. Fetch Trending Section
-        const trendingRes = await fetch(`${apiHost}/api/v1/product/section/Trending`);
-        const trendingData = await trendingRes.json();
-        if (trendingData.success && trendingData.data?.products?.length > 0) {
-          setTrendingProducts(trendingData.data.products);
-        } else {
-          const backupRes = await fetch(`${apiHost}/api/v1/product?limit=4`);
-          const backupData = await backupRes.json();
-          setTrendingProducts(backupData.data ? [...backupData.data].reverse() : []);
-        }
+          // 2. Fetch Trending Section
+          const trendingRes = await fetch(getApiUrl("/api/v1/product/section/Trending"));
+          const trendingData = await trendingRes.json();
+          if (trendingData.success && trendingData.data?.products?.length > 0) {
+            setTrendingProducts(trendingData.data.products);
+          } else {
+            const backupRes = await fetch(getApiUrl("/api/v1/product?limit=4"));
+            const backupData = await backupRes.json();
+            setTrendingProducts(backupData.data ? [...backupData.data].reverse() : []);
+          }
 
-        // 3. Fetch Smart Watches
-        const productsRes = await fetch(`${apiHost}/api/v1/product?category=Smart%20Watch&limit=4`);
-        const productsData = await productsRes.json();
-        if (productsData.statusCode === 200 && Array.isArray(productsData.data) && productsData.data.length > 0) {
-          setSmartProducts(productsData.data);
-        } else {
-          setSmartProducts([]);
+          // 3. Fetch Smart Watches
+          const productsRes = await fetch(getApiUrl("/api/v1/product?category=Smart%20Watch&limit=4"));
+          const productsData = await productsRes.json();
+          if (productsData.statusCode === 200 && Array.isArray(productsData.data) && productsData.data.length > 0) {
+            setSmartProducts(productsData.data);
+          } else {
+            setSmartProducts([]);
+          }
+        } catch (error) {
+          console.error("Error fetching homepage product sections:", error);
+        } finally {
+          setLoading(false);
         }
-      } catch (error) {
-        console.error("Error fetching homepage product sections:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+      };
 
-    fetchSections();
-  }, []);
+      fetchSections();
+    }
+  }, [featuredProducts.length, trendingProducts.length, smartProducts.length]);
 
   const displayFeatured = featuredProducts;
   const displayTrending = trendingProducts;

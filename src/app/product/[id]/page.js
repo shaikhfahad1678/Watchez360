@@ -1,12 +1,12 @@
 import ProductClientWrapper from "./ProductClientWrapper";
+import { getApiUrl } from "../../../utils/api";
 
 export async function generateMetadata({ params }) {
   const { id } = await params;
   
   let product = null;
   try {
-    const apiHost = process.env.NEXT_PUBLIC_API_URL || "/api";
-    const res = await fetch(`${apiHost}/api/v1/product/${id}`);
+    const res = await fetch(getApiUrl(`/api/v1/product/${id}`));
     if (res.ok) {
       const result = await res.json();
       if (result.success && result.data) {
@@ -47,5 +47,20 @@ export async function generateMetadata({ params }) {
 }
 
 export default async function Page({ params }) {
-  return <ProductClientWrapper />;
+  const { id } = await params;
+  
+  let initialProduct = null;
+  try {
+    const res = await fetch(getApiUrl(`/api/v1/product/${id}`));
+    if (res.ok) {
+      const result = await res.json();
+      if (result.success && result.data) {
+        initialProduct = result.data;
+      }
+    }
+  } catch (err) {
+    console.error("Error fetching initial product for ID", id, err);
+  }
+  
+  return <ProductClientWrapper initialProduct={initialProduct} />;
 }

@@ -1,9 +1,13 @@
-import { useState, useEffect } from "react";
+"use client";
+
+import { useState, useEffect, useRef } from "react";
 import { useLocation, useParams } from "react-router-dom";
 import Navbar from "../components/Navbar";
+import { getApiUrl } from "../utils/api";
 import Footer from "../components/Footer";
 import ProductSection from "../components/ProductSection";
 import WristFitGuide from "../components/WristFitGuide";
+import WatchVideoSection from "../components/WatchVideoSection";
 import {
   Maximize2,
   Cpu,
@@ -13,7 +17,8 @@ import {
   Sparkles,
   Circle,
   Battery,
-  Phone
+  Phone,
+  Activity
 } from "lucide-react";
 
 const iconMap = {
@@ -26,59 +31,9 @@ const iconMap = {
   glass: Sparkles,
   display: Sparkles,
   battery: Battery,
-  calling: Phone
+  calling: Phone,
+  sensors: Activity
 };
-
-const specifications = [
-  {
-    id: "dial",
-    label: "Dial Size",
-    value: "40 mm",
-    shortDesc: "Optimal casing diameter",
-    details: "Perfect wrist presence with a 13mm thickness and a 48mm lug-to-lug distance, comfortable for all wrist sizes.",
-    x: "50%", y: "50%",
-  },
-  {
-    id: "movement",
-    label: "Movement",
-    value: "Automatic",
-    shortDesc: "Self-winding calibre",
-    details: "High-precision mechanical movement with a 42-hour power reserve, 25 jewels, and sweeping second hand.",
-    x: "80%", y: "50%",
-  },
-  {
-    id: "case",
-    label: "Case Material",
-    value: "Steel",
-    shortDesc: "Marine-grade 316L",
-    details: "Forged in surgical-grade 316L stainless steel, offering exceptional corrosion resistance and a pristine polish.",
-    x: "22%", y: "30%",
-  },
-  {
-    id: "strap",
-    label: "Strap Material",
-    value: "Bracelet",
-    shortDesc: "Oyster-style links",
-    details: "Three-piece solid link Oyster bracelet featuring a folding Oysterlock safety clasp with Easylink comfort extension.",
-    x: "50%", y: "15%",
-  },
-  {
-    id: "resistance",
-    label: "Resistance",
-    value: "300 m",
-    shortDesc: "Triple-lock waterproof",
-    details: "Diving-grade water resistance up to 300 meters (1,000 feet) secured by a triple-lock screw-down crown system.",
-    x: "78%", y: "38%",
-  },
-  {
-    id: "glass",
-    label: "Glass",
-    value: "Sapphire",
-    shortDesc: "Double AR Scratch-proof",
-    details: "Scratch-resistant synthetic sapphire crystal with double-sided anti-reflective coating for pristine legibility.",
-    x: "38%", y: "42%",
-  }
-];
 
 const colors = [
   { name: "Onyx Black", hex: "#1A1A1A" },
@@ -156,11 +111,11 @@ const getResolvedColors = (product) => {
   return colors;
 };
 
-export default function Product() {
+export default function Product({ initialProduct }) {
   const location = useLocation();
   const { id } = useParams();
 
-  const [dbProduct, setDbProduct] = useState(location.state?.product || null);
+  const [dbProduct, setDbProduct] = useState(initialProduct || location.state?.product || null);
   const [loading, setLoading] = useState(!dbProduct && !!id);
 
   const initialImages = getResolvedImages(dbProduct);
@@ -172,11 +127,13 @@ export default function Product() {
     initialColors[0] || { name: "Default", hex: "#CCCCCC" }
   );
 
+  const viewTracked = useRef(null);
+
   // Track previous id to reset state when id changes
   const [prevId, setPrevId] = useState(id);
   if (id !== prevId) {
     setPrevId(id);
-    const initialProd = location.state?.product || null;
+    const initialProd = initialProduct || location.state?.product || null;
     setDbProduct(initialProd);
     setLoading(!initialProd && !!id);
   }
@@ -193,8 +150,7 @@ export default function Product() {
 
   useEffect(() => {
     if (!dbProduct && id) {
-      const apiHost = process.env.NEXT_PUBLIC_API_URL || "/api";
-      fetch(`${apiHost}/api/v1/product/${id}`)
+      fetch(getApiUrl(`/api/v1/product/${id}`))
         .then((res) => res.json())
         .then((res) => {
           if (res.success && res.data) {
@@ -208,6 +164,9 @@ export default function Product() {
 
   useEffect(() => {
     if (!dbProduct?._id) return;
+    if (viewTracked.current === dbProduct._id) return;
+    viewTracked.current = dbProduct._id;
+
     const apiHost = process.env.NEXT_PUBLIC_API_URL || "/api";
 
     // 1. Increment product views (always, logged in or not)
@@ -275,11 +234,7 @@ export default function Product() {
   };
 
   const handleLinkClick = () => {
-    if (!dbProduct?._id) return;
-    const apiHost = process.env.NEXT_PUBLIC_API_URL || "/api";
-    fetch(`${apiHost}/api/v1/product/click/${dbProduct._id}`, {
-      method: "POST",
-    }).catch((err) => console.error("Error tracking link click:", err));
+    // Click tracking disabled
   };
 
   const brand = dbProduct?.brand || "Titan";
@@ -403,6 +358,17 @@ export default function Product() {
       });
     }
   }
+
+  if (dbProduct?.sensors && dbProduct.sensors.length > 0) {
+    resolvedSpecs.push({
+      id: "sensors",
+      label: "Sensors",
+      value: dbProduct.sensors.join(", "),
+      shortDesc: "Integrated sensors",
+      details: `Equipped with tracking sensors: ${dbProduct.sensors.join(", ")}.`,
+      x: "40%", y: "80%",
+    });
+  }
   
   const resolvedLinks = dbProduct?.custom_links && dbProduct.custom_links.length > 0
     ? dbProduct.custom_links
@@ -481,8 +447,6 @@ export default function Product() {
               {description}
             </p>
 
-
-
             {/* Available Colors */}
             <div className="mb-8">
               <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-800 mb-3 flex items-center justify-between">
@@ -515,6 +479,25 @@ export default function Product() {
                 })}
               </div>
             </div>
+
+            {/* Sensors List */}
+            {dbProduct?.sensors && dbProduct.sensors.length > 0 && (
+              <div className="mb-8">
+                <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-800 mb-3">
+                  Sensors
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {dbProduct.sensors.map((sensor, idx) => (
+                    <span
+                      key={idx}
+                      className="px-3 py-1.5 bg-neutral-50 border border-neutral-100 rounded-xl text-[10px] font-bold uppercase tracking-wider text-neutral-700 transition-colors"
+                    >
+                      {sensor}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Pricing Area */}
             <div className="flex items-end justify-between pt-3 mt-1 mb-8">
@@ -637,6 +620,9 @@ export default function Product() {
             </div>
           </div>
         </div>
+
+        {/* Videos & YouTube Shorts Section */}
+        <WatchVideoSection product={dbProduct} brand={brand} name={name} />
       </div>
 
       {/* Product Additional Sections (Similar & More Watches) */}

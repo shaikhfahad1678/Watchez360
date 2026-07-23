@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
@@ -5,66 +7,68 @@ import Footer from "../components/Footer";
 import ListOfBlog from "../components/ListOfBlog";
 import BlogPage from "../components/BlogPage";
 import { mockBlogs } from "../data/blogData";
+import { getApiUrl } from "../utils/api";
 
-export default function Blog() {
+export default function Blog({ initialBlogs = [] }) {
   const { slug } = useParams();
   const navigate = useNavigate();
-  const [blogs, setBlogs] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [blogs, setBlogs] = useState(initialBlogs);
+  const [loading, setLoading] = useState(blogs.length === 0);
 
   // Find the selected blog/top-list by slug from loaded lists
   const selectedBlog = blogs.find((b) => b.slug === slug);
   const selectedBlogId = selectedBlog ? (selectedBlog._id || selectedBlog.id) : null;
 
   useEffect(() => {
-    const fetchBlogs = async () => {
-      try {
-        const apiHost = process.env.NEXT_PUBLIC_API_URL || "/api";
-        const [blogsRes, topListsRes] = await Promise.all([
-          fetch(`${apiHost}/api/v1/blog`),
-          fetch(`${apiHost}/api/v1/top-list`)
-        ]);
+    if (blogs.length === 0) {
+      const fetchBlogs = async () => {
+        try {
+          const [blogsRes, topListsRes] = await Promise.all([
+            fetch(getApiUrl("/api/v1/blog")),
+            fetch(getApiUrl("/api/v1/top-list"))
+          ]);
 
-        let combined = [];
+          let combined = [];
 
-        if (blogsRes.ok) {
-          const blogsData = await blogsRes.json();
-          if (blogsData.success && Array.isArray(blogsData.blogs)) {
-            combined = [...combined, ...blogsData.blogs.map(b => ({
-              ...b,
-              type: "standard",
-              slug: b.slug || b.title?.toLowerCase().trim().replace(/[^a-z0-9]/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "")
-            }))];
+          if (blogsRes.ok) {
+            const blogsData = await blogsRes.json();
+            if (blogsData.success && Array.isArray(blogsData.blogs)) {
+              combined = [...combined, ...blogsData.blogs.map(b => ({
+                ...b,
+                type: "standard",
+                slug: b.slug || b.title?.toLowerCase().trim().replace(/[^a-z0-9]/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "")
+              }))];
+            }
           }
-        }
 
-        if (topListsRes.ok) {
-          const topListData = await topListsRes.json();
-          if (topListData.success && Array.isArray(topListData.lists)) {
-            combined = [...combined, ...topListData.lists.map(l => ({
-              ...l,
-              type: "topList",
-              slug: l.slug || l.title?.toLowerCase().trim().replace(/[^a-z0-9]/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "")
-            }))];
+          if (topListsRes.ok) {
+            const topListData = await topListsRes.json();
+            if (topListData.success && Array.isArray(topListData.lists)) {
+              combined = [...combined, ...topListData.lists.map(l => ({
+                ...l,
+                type: "topList",
+                slug: l.slug || l.title?.toLowerCase().trim().replace(/[^a-z0-9]/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "")
+              }))];
+            }
           }
-        }
 
-        if (combined.length > 0) {
-          // Sort chronologically descending
-          combined.sort((a, b) => new Date(b.created_at || b.date) - new Date(a.created_at || a.date));
-          setBlogs(combined);
-          setLoading(false);
-          return;
+          if (combined.length > 0) {
+            // Sort chronologically descending
+            combined.sort((a, b) => new Date(b.created_at || b.date) - new Date(a.created_at || a.date));
+            setBlogs(combined);
+            setLoading(false);
+            return;
+          }
+        } catch (err) {
+          console.error("Failed to load backend blogs/lists, falling back to mock blogs:", err);
         }
-      } catch (err) {
-        console.error("Failed to load backend blogs/lists, falling back to mock blogs:", err);
-      }
-      setBlogs(mockBlogs.map(b => ({ ...b, type: "standard" })));
-      setLoading(false);
-    };
+        setBlogs(mockBlogs.map(b => ({ ...b, type: "standard" })));
+        setLoading(false);
+      };
 
-    fetchBlogs();
-  }, []);
+      fetchBlogs();
+    }
+  }, [blogs]);
 
   return (
     <div className="bg-white text-neutral-900 min-h-screen flex flex-col font-sans selection:bg-neutral-100">

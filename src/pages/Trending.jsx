@@ -1,34 +1,38 @@
+"use client";
+
 import { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import Card from "../components/Card";
+import { getApiUrl } from "../utils/api";
 
-export default function Trending() {
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
+export default function Trending({ initialProducts = [] }) {
+  const [products, setProducts] = useState(initialProducts);
+  const [loading, setLoading] = useState(products.length === 0);
 
   useEffect(() => {
-    const fetchTrending = async () => {
-      const apiHost = process.env.NEXT_PUBLIC_API_URL || "/api";
-      try {
-        const res = await fetch(`${apiHost}/api/v1/product/section/Trending`);
-        const result = await res.json();
-        if (result.success && result.data?.products?.length > 0) {
-          setProducts(result.data.products);
-        } else {
-          // fallback
-          const backupRes = await fetch(`${apiHost}/api/v1/product`);
-          const backupData = await backupRes.json();
-          setProducts(backupData.data ? [...backupData.data].reverse() : []);
+    if (products.length === 0) {
+      const fetchTrending = async () => {
+        try {
+          const res = await fetch(getApiUrl("/api/v1/product/section/Trending"));
+          const result = await res.json();
+          if (result.success && result.data?.products?.length > 0) {
+            setProducts(result.data.products);
+          } else {
+            // fallback
+            const backupRes = await fetch(getApiUrl("/api/v1/product"));
+            const backupData = await backupRes.json();
+            setProducts(backupData.data ? [...backupData.data].reverse() : []);
+          }
+        } catch (err) {
+          console.error("Failed to load trending watches:", err);
+        } finally {
+          setLoading(false);
         }
-      } catch (err) {
-        console.error("Failed to load trending watches:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchTrending();
-  }, []);
+      };
+      fetchTrending();
+    }
+  }, [products]);
 
   return (
     <div className="bg-white text-neutral-900 min-h-screen flex flex-col font-sans">

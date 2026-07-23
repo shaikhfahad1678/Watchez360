@@ -1,10 +1,16 @@
+"use client";
+
 import { useNavigate } from 'react-router-dom';
 import HomeLanding from '../components/HomeLanding';
 import Navbar from '../components/Navbar';
 import HomeSection from '../components/HomeSection';
 import Footer from '../components/Footer';
 
-export default function Home() {
+export default function Home({
+  initialFeaturedProducts = [],
+  initialTrendingProducts = [],
+  initialSmartProducts = []
+}) {
   const navigate = useNavigate();
 
   return (
@@ -19,7 +25,11 @@ export default function Home() {
       </section>
 
       {/* Grouped Watch Collections Component */}
-      <HomeSection />
+      <HomeSection 
+        initialFeaturedProducts={initialFeaturedProducts}
+        initialTrendingProducts={initialTrendingProducts}
+        initialSmartProducts={initialSmartProducts}
+      />
 
       {/* Promo Banner */}
       <section className="max-w-7xl mx-auto px-6 py-10 text-center">
