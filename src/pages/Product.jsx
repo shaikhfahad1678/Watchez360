@@ -74,10 +74,26 @@ const getLinkStyles = (label) => {
 
 const getResolvedImages = (product) => {
   if (product?.images && product.images.length > 0) {
-    return [...product.images]
-      .sort((a, b) => (b.is_main ? 1 : 0) - (a.is_main ? 1 : 0))
-      .map((img) => img.url);
+    const sorted = [...product.images].sort((a, b) => {
+      const aMain = typeof a === "object" && a?.is_main ? 1 : 0;
+      const bMain = typeof b === "object" && b?.is_main ? 1 : 0;
+      return bMain - aMain;
+    });
+
+    const urls = sorted
+      .map((img) => (typeof img === "string" ? img : img?.url))
+      .filter(Boolean);
+
+    if (urls.length > 0) {
+      return urls;
+    }
   }
+
+  const singleImg = typeof product?.image === "string" ? product.image : product?.image?.url || product?.image_url || product?.img;
+  if (singleImg) {
+    return [singleImg];
+  }
+
   return [
     "https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcRDSGVPYjcIbgC2TcaURidzP_LNZWZqEDBD1U-IUbwtQN-YLZwoNugvKX0yEPxBNARVOHGLnXMZxsLxmZ7ipe5Q2pzE4TFuo6P2eApx-J9FXbvI8xi7c22umA",
     "https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcQw7OrZGZgrbBkEDEKIOE1NB9hKgxq819aPBqMvmz6oTqIl7q2my82ufZChJtmg2d1GsvwhRjC8geBvjk4JociI4bOewShFiwCmqPUk1kCxhOxltMFHTAcEu-1F",
@@ -117,6 +133,7 @@ export default function Product({ initialProduct }) {
 
   const [dbProduct, setDbProduct] = useState(initialProduct || location.state?.product || null);
   const [loading, setLoading] = useState(!dbProduct && !!id);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const initialImages = getResolvedImages(dbProduct);
   const initialColors = getResolvedColors(dbProduct);
@@ -149,7 +166,7 @@ export default function Product({ initialProduct }) {
   }
 
   useEffect(() => {
-    if (!dbProduct && id) {
+    if (id) {
       fetch(getApiUrl(`/api/v1/product/${id}`))
         .then((res) => res.json())
         .then((res) => {
@@ -160,7 +177,7 @@ export default function Product({ initialProduct }) {
         .catch((err) => console.error("Error loading product:", err))
         .finally(() => setLoading(false));
     }
-  }, [id, dbProduct]);
+  }, [id]);
 
   useEffect(() => {
     if (!dbProduct?._id) return;
@@ -240,6 +257,7 @@ export default function Product({ initialProduct }) {
   const brand = dbProduct?.brand || "Titan";
   const name = dbProduct?.model_name || dbProduct?.name || "Titan Karishma Analog Black Dial Men's Watch";
   const description = dbProduct?.description || "A masterpiece of modern watchmaking, the Submariner Classic merges iconic vintage design codes with high-precision engineering. Built for explorers, enthusiasts, and collectors alike, it features an incredible level of polish and visual excellence that adapts seamlessly from active outdoor pursuits to sophisticated formal evenings.";
+  const speciality = dbProduct?.speciality || "Precision horology with high-durability craftsmanship and refined aesthetics.";
   
   const resolvedImages = getResolvedImages(dbProduct);
 
@@ -433,19 +451,48 @@ export default function Product({ initialProduct }) {
             </h1>
 
             {/* Rating */}
-            <div className="flex items-center gap-2 text-xs font-semibold text-neutral-500 mb-6">
+            <div className="flex items-center gap-2 text-xs font-semibold text-neutral-500 mb-4">
               <div className="flex gap-0.5 text-amber-500 text-sm">
                 <span>★</span><span>★</span><span>★</span><span>★</span><span className="text-neutral-300">★</span>
               </div>
-              <span className="text-black font-black">4.8</span>
-              <span className="text-neutral-300">|</span>
-              <span className="hover:text-black transition-colors cursor-pointer">124 Curated Reviews</span>
+              <span className="text-black font-black">{dbProduct?.rating || 4.8}</span>
+              {dbProduct?.num_reviews ? (
+                <>
+                  <span className="text-neutral-300">|</span>
+                  <span className="hover:text-black transition-colors cursor-pointer">{dbProduct.num_reviews} Curated Reviews</span>
+                </>
+              ) : null}
             </div>
 
+
+
             {/* Features Description */}
-            <p className="text-xs sm:text-sm text-neutral-700 leading-relaxed font-medium mb-8">
-              {description}
-            </p>
+            <div className="mb-6">
+              <p className={`text-xs sm:text-sm text-neutral-700 leading-relaxed font-medium transition-all duration-300 ${!isExpanded && description?.length > 250 ? "line-clamp-5" : ""}`}>
+                {description}
+              </p>
+              {description?.length > 250 && (
+                <button
+                  type="button"
+                  onClick={() => setIsExpanded(!isExpanded)}
+                  className="mt-1.5 text-[10px] font-black uppercase tracking-[0.15em] text-neutral-900 hover:text-neutral-600 transition-colors cursor-pointer flex items-center gap-1 underline underline-offset-4"
+                >
+                  {isExpanded ? "Show Less ↑" : "See More ↓"}
+                </button>
+              )}
+            </div>
+
+            {/* Speciality / Key Highlights */}
+            {speciality && speciality.trim() !== "" && (
+              <div className="bg-amber-500/10 border-l-4 border-amber-500 p-3.5 rounded-r-xl mb-8">
+                <span className="text-[10px] font-black uppercase tracking-wider text-amber-800 block mb-1">
+                  Speciality & Highlights
+                </span>
+                <p className="text-xs sm:text-sm text-neutral-900 font-semibold leading-relaxed">
+                  {speciality}
+                </p>
+              </div>
+            )}
 
             {/* Available Colors */}
             <div className="mb-8">

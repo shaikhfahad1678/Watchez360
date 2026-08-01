@@ -47,11 +47,17 @@ export default function Collection() {
   };
 
   const getWatchImage = (watch) => {
-    let img = watch.image;
-    if (!img && watch.images) {
-      img = watch.images.find((i) => i.is_main)?.url || watch.images[0]?.url;
+    let img = typeof watch.image === "string" ? watch.image : watch.image?.url;
+    if (!img && watch.images && watch.images.length > 0) {
+      const mainImg = watch.images.find((i) => typeof i === "object" && i?.is_main);
+      if (mainImg?.url) {
+        img = mainImg.url;
+      } else {
+        const first = watch.images[0];
+        img = typeof first === "string" ? first : first?.url;
+      }
     }
-    return img || "https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcTks2A_m02ftOVE8GfuqOanpR67Uo4KWA0cz2eOFsPXIvvB2ZaA1MHkartj-fLktkBPf3_8YX2wtaFpUkzzeAcJpYeQeIqy-Irp6DoGb4BgH_8H128dmNPTlg";
+    return img || watch.image_url || watch.img || "https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcTks2A_m02ftOVE8GfuqOanpR67Uo4KWA0cz2eOFsPXIvvB2ZaA1MHkartj-fLktkBPf3_8YX2wtaFpUkzzeAcJpYeQeIqy-Irp6DoGb4BgH_8H128dmNPTlg";
   };
 
   const getWatchPrice = (watch) => {

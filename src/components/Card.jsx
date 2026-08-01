@@ -11,12 +11,18 @@ const Card = memo(function Card({ product = {} }) {
   const brand = product.brand || "Titan";
   const name = product.model_name || product.name || "Titan Karishma Analog Black Dial Men's Watch";
 
-  let image = product.image;
-  if (!image && product.images) {
-    image = product.images.find(img => img.is_main)?.url || product.images[0]?.url;
+  let image = typeof product.image === "string" ? product.image : product.image?.url;
+  if (!image && product.images && product.images.length > 0) {
+    const mainImg = product.images.find(img => typeof img === "object" && img?.is_main);
+    if (mainImg?.url) {
+      image = mainImg.url;
+    } else {
+      const first = product.images[0];
+      image = typeof first === "string" ? first : first?.url;
+    }
   }
   if (!image) {
-    image = "https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcTks2A_m02ftOVE8GfuqOanpR67Uo4KWA0cz2eOFsPXIvvB2ZaA1MHkartj-fLktkBPf3_8YX2wtaFpUkzzeAcJpYeQeIqy-Irp6DoGb4BgH_8H128dmNPTlg";
+    image = product.image_url || product.img || "https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcTks2A_m02ftOVE8GfuqOanpR67Uo4KWA0cz2eOFsPXIvvB2ZaA1MHkartj-fLktkBPf3_8YX2wtaFpUkzzeAcJpYeQeIqy-Irp6DoGb4BgH_8H128dmNPTlg";
   }
 
   let price = product.price;
@@ -27,6 +33,7 @@ const Card = memo(function Card({ product = {} }) {
   }
 
   const description = product.description || "Luxury stainless steel dive watch with sapphire crystal and precision mechanical movement.";
+  const speciality = product.speciality;
 
   const mockProduct = {
     ...product,
@@ -35,7 +42,8 @@ const Card = memo(function Card({ product = {} }) {
     name,
     image,
     price,
-    description
+    description,
+    speciality
   };
 
   const isCompared = isInCompare(mockProduct.id);
@@ -145,7 +153,7 @@ const Card = memo(function Card({ product = {} }) {
 
         {/* Description - Hidden on mobile for clean catalog alignment */}
         <p
-          className="hidden sm:block text-[11px] font-medium text-gray-500 leading-relaxed mb-4"
+          className="hidden sm:block text-[11px] font-medium text-gray-500 leading-relaxed mb-2"
           style={{
             display: "-webkit-box",
             WebkitLineClamp: 2,
@@ -156,6 +164,15 @@ const Card = memo(function Card({ product = {} }) {
         >
           {description}
         </p>
+
+        {/* Speciality Badge */}
+        {speciality && speciality.trim() !== "" && (
+          <div className="hidden sm:block mb-3">
+            <span className="text-[9px] font-bold text-amber-800 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-md truncate block" title={speciality}>
+              ✨ {speciality}
+            </span>
+          </div>
+        )}
 
         {/* Price + Action Button */}
         <div className="flex items-center justify-between mt-auto pt-2.5 sm:pt-3">
