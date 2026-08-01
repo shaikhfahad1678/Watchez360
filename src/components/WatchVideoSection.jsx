@@ -118,49 +118,7 @@ const getResolvedVideos = (product) => {
     }
   }
 
-  // Fallback default videos/shorts if none provided in database
-  return [
-    {
-      id: "short-fallback-1",
-      youtubeId: "8Z1eK1s8aO0",
-      thumbnail: "https://img.youtube.com/vi/8Z1eK1s8aO0/hqdefault.jpg",
-      title: `${brand} ${model} Wrist Showcase`,
-      type: "short",
-      duration: "0:30",
-      views: "Wrist Shot",
-      channel: brand
-    },
-    {
-      id: "short-fallback-2",
-      youtubeId: "lY20FX3B2Qo",
-      thumbnail: "https://img.youtube.com/vi/lY20FX3B2Qo/hqdefault.jpg",
-      title: `${brand} ${model} Unboxing & First Look`,
-      type: "short",
-      duration: "0:45",
-      views: "Unboxing",
-      channel: brand
-    },
-    {
-      id: "video-fallback-1",
-      youtubeId: "5WnN-QeYl-c",
-      thumbnail: "https://img.youtube.com/vi/5WnN-QeYl-c/hqdefault.jpg",
-      title: `${brand} ${model} In-Depth Hands-On Review`,
-      type: "video",
-      duration: "8:45",
-      views: "Watch Review",
-      channel: brand
-    },
-    {
-      id: "video-fallback-2",
-      youtubeId: "aVv-H11Xw48",
-      thumbnail: "https://img.youtube.com/vi/aVv-H11Xw48/hqdefault.jpg",
-      title: `${brand} ${model} Detailed Specifications & Dial Overview`,
-      type: "video",
-      duration: "12:10",
-      views: "Watch Review",
-      channel: brand
-    }
-  ];
+  return [];
 };
 
 export default function WatchVideoSection({ product, brand = "Titan", name = "Timepiece" }) {
