@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import { getOptimizedThumbnail } from "../utils/imageOptimizer";
 import {
   Play,
   Tv,
@@ -51,21 +52,24 @@ const extractYoutubeId = (str) => {
 const parseVideoInput = (input) => {
   if (!input) return [];
   if (Array.isArray(input)) {
-    return input.map(item => {
-      if (typeof item === "string") return { url: item };
-      if (typeof item === "object" && item !== null) {
-        return {
+    const list = [];
+    input.forEach(item => {
+      if (typeof item === "string") {
+        const parts = item.split(/[;,\n]/).map(s => s.trim()).filter(Boolean);
+        parts.forEach(p => list.push({ url: p }));
+      } else if (typeof item === "object" && item !== null) {
+        list.push({
           url: item.url || item.youtubeId || item.id,
           title: item.title,
           duration: item.duration,
           channel: item.channel
-        };
+        });
       }
-      return null;
-    }).filter(Boolean);
+    });
+    return list.filter(item => item.url);
   }
   if (typeof input === "string") {
-    return input.split(/[;\n]/).map(s => ({ url: s.trim() })).filter(item => item.url);
+    return input.split(/[;,\n]/).map(s => ({ url: s.trim() })).filter(item => item.url);
   }
   return [];
 };
@@ -148,8 +152,8 @@ export default function WatchVideoSection({ product, brand = "Titan", name = "Ti
       {/* Section Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between mb-6 sm:mb-8 gap-4">
         <div>
-          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-red-600 flex items-center gap-1.5 mb-1.5">
-            <Film size={14} className="text-red-600" /> Watch In Action
+          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-800 flex items-center gap-1.5 mb-1.5">
+            <Film size={14} className="text-black" /> Watch In Action
           </span>
           <h2 className="text-2xl sm:text-3xl font-black uppercase tracking-[0.1em] text-black">
             Videos & YouTube Shorts
@@ -165,7 +169,7 @@ export default function WatchVideoSection({ product, brand = "Titan", name = "Ti
         <div className="mb-10">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-xs sm:text-sm font-black uppercase tracking-wider text-neutral-900 flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-red-600 animate-pulse" />
+              <span className="w-2 h-2 rounded-full bg-black animate-pulse" />
               YouTube Shorts (9:16 Vertical)
             </h3>
 
@@ -197,13 +201,14 @@ export default function WatchVideoSection({ product, brand = "Titan", name = "Ti
             style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
           >
             {shortsList.map((short) => {
-              const thumb = short.thumbnail || `https://img.youtube.com/vi/${short.youtubeId}/hqdefault.jpg`;
+              const rawThumb = short.thumbnail || `https://img.youtube.com/vi/${short.youtubeId}/mqdefault.jpg`;
+              const thumb = getOptimizedThumbnail(rawThumb, 320);
               const isPlaying = playingInlineId === short.id;
 
               return (
                 <div
                   key={short.id}
-                  className="group relative flex-shrink-0 w-44 sm:w-52 aspect-[9/16] snap-start rounded-2xl overflow-hidden bg-black border border-neutral-200/80 hover:border-red-500/50 shadow-md transition-all flex flex-col justify-between"
+                  className="group relative flex-shrink-0 w-44 sm:w-52 aspect-[9/16] snap-start rounded-2xl overflow-hidden bg-black border border-neutral-200/80 hover:border-black shadow-md transition-all flex flex-col justify-between"
                 >
                   {isPlaying ? (
                     <div className="relative w-full h-full bg-black">
@@ -221,7 +226,7 @@ export default function WatchVideoSection({ product, brand = "Titan", name = "Ti
                           e.stopPropagation();
                           setPlayingInlineId(null);
                         }}
-                        className="absolute top-2 right-2 z-20 bg-black/80 hover:bg-red-600 text-white p-1 rounded-full text-xs shadow-lg transition-colors cursor-pointer"
+                        className="absolute top-2 right-2 z-20 bg-black/80 hover:bg-neutral-800 text-white p-1 rounded-full text-xs shadow-lg transition-colors cursor-pointer"
                         title="Close Player"
                       >
                         <X size={14} />
@@ -243,7 +248,7 @@ export default function WatchVideoSection({ product, brand = "Titan", name = "Ti
 
                       {/* Badges */}
                       <div className="relative z-10 flex items-center justify-between">
-                        <span className="bg-red-600 text-white text-[8px] font-black tracking-wider uppercase px-2 py-0.5 rounded-full flex items-center gap-1 shadow-md">
+                        <span className="bg-white text-black text-[8px] font-black tracking-wider uppercase px-2 py-0.5 rounded-full flex items-center gap-1 shadow-md">
                           <Smartphone size={9} /> 9:16 Short
                         </span>
                         <span className="bg-black/70 backdrop-blur-sm text-white text-[8px] font-bold px-1.5 py-0.5 rounded">
@@ -252,8 +257,8 @@ export default function WatchVideoSection({ product, brand = "Titan", name = "Ti
                       </div>
 
                       {/* Play Button Overlay */}
-                      <div className="relative z-10 my-auto self-center w-12 h-12 rounded-full bg-red-600/90 hover:bg-red-600 border border-white/40 flex items-center justify-center text-white shadow-xl group-hover:scale-110 transition-all duration-300">
-                        <Play size={20} className="fill-white translate-x-0.5" />
+                      <div className="relative z-10 my-auto self-center w-12 h-12 rounded-full bg-white/95 hover:bg-white text-black border border-white/40 flex items-center justify-center shadow-xl group-hover:scale-110 transition-all duration-300">
+                        <Play size={20} className="fill-black text-black translate-x-0.5" />
                       </div>
 
                       {/* Info */}
@@ -263,7 +268,7 @@ export default function WatchVideoSection({ product, brand = "Titan", name = "Ti
                         </p>
                         <div className="flex items-center justify-between text-[9px] text-neutral-300 font-medium">
                           <span>{short.channel}</span>
-                          <span className="text-red-400 font-bold uppercase tracking-wider">Play Inline ▶</span>
+                          <span className="text-white font-bold uppercase tracking-wider underline underline-offset-2">Play Inline ▶</span>
                         </div>
                       </div>
                     </div>
@@ -312,13 +317,14 @@ export default function WatchVideoSection({ product, brand = "Titan", name = "Ti
             style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
           >
             {reviewsList.map((video) => {
-              const thumb = video.thumbnail || `https://img.youtube.com/vi/${video.youtubeId}/hqdefault.jpg`;
+              const rawThumb = video.thumbnail || `https://img.youtube.com/vi/${video.youtubeId}/mqdefault.jpg`;
+              const thumb = getOptimizedThumbnail(rawThumb, 480);
               const isPlaying = playingInlineId === video.id;
 
               return (
                 <div
                   key={video.id}
-                  className="group flex-shrink-0 w-68 sm:w-80 snap-start bg-white border border-neutral-200/80 rounded-2xl overflow-hidden hover:border-red-500/50 transition-all cursor-pointer flex flex-col justify-between select-none shadow-sm hover:shadow-md"
+                  className="group flex-shrink-0 w-68 sm:w-80 snap-start bg-white border border-neutral-200/80 rounded-2xl overflow-hidden hover:border-black transition-all cursor-pointer flex flex-col justify-between select-none shadow-sm hover:shadow-md"
                 >
                   {/* 16:9 Aspect Ratio Container */}
                   <div className="relative aspect-video w-full overflow-hidden bg-black">
@@ -338,7 +344,7 @@ export default function WatchVideoSection({ product, brand = "Titan", name = "Ti
                             e.stopPropagation();
                             setPlayingInlineId(null);
                           }}
-                          className="absolute top-2 right-2 z-20 bg-black/80 hover:bg-red-600 text-white p-1 rounded-full text-xs shadow-lg transition-colors cursor-pointer"
+                          className="absolute top-2 right-2 z-20 bg-black/80 hover:bg-neutral-800 text-white p-1 rounded-full text-xs shadow-lg transition-colors cursor-pointer"
                           title="Close Player"
                         >
                           <X size={14} />
@@ -356,8 +362,8 @@ export default function WatchVideoSection({ product, brand = "Titan", name = "Ti
                           className="w-full h-full object-cover group-hover/thumb:scale-105 transition-transform duration-500"
                         />
                         <div className="absolute inset-0 bg-black/30 group-hover/thumb:bg-black/10 transition-colors flex items-center justify-center">
-                          <div className="w-12 h-12 rounded-full bg-red-600/90 hover:bg-red-600 flex items-center justify-center text-white shadow-xl group-hover/thumb:scale-110 transition-all duration-300">
-                            <Play size={20} className="fill-current translate-x-0.5" />
+                          <div className="w-12 h-12 rounded-full bg-white/95 hover:bg-white text-black border border-white/40 flex items-center justify-center shadow-xl group-hover/thumb:scale-110 transition-all duration-300">
+                            <Play size={20} className="fill-black text-black translate-x-0.5" />
                           </div>
                         </div>
                         <span className="absolute bottom-2.5 right-2.5 bg-black/80 backdrop-blur-sm text-white text-[9px] font-bold px-2 py-0.5 rounded-md">
@@ -379,7 +385,7 @@ export default function WatchVideoSection({ product, brand = "Titan", name = "Ti
                       <button
                         type="button"
                         onClick={() => setPlayingInlineId(isPlaying ? null : video.id)}
-                        className="text-red-600 hover:text-red-700 font-black uppercase tracking-wider cursor-pointer"
+                        className="text-black font-extrabold hover:text-neutral-600 uppercase tracking-wider cursor-pointer underline underline-offset-2"
                       >
                         {isPlaying ? "Close" : "Play Inline ▶"}
                       </button>
@@ -404,7 +410,7 @@ export default function WatchVideoSection({ product, brand = "Titan", name = "Ti
             {/* Modal Header */}
             <div className="flex items-center justify-between px-4 py-3 bg-neutral-900 border-b border-neutral-800 text-white">
               <div className="flex items-center gap-2 overflow-hidden mr-3">
-                <span className="bg-red-600 text-white text-[9px] font-black px-1.5 py-0.5 rounded uppercase flex-shrink-0">
+                <span className="bg-white text-black text-[9px] font-black px-1.5 py-0.5 rounded uppercase flex-shrink-0">
                   {activeVideoModal.type === "short" ? "Short" : "Review"}
                 </span>
                 <h3 className="text-xs font-bold truncate text-neutral-100">
@@ -424,7 +430,7 @@ export default function WatchVideoSection({ product, brand = "Titan", name = "Ti
                 </a>
                 <button
                   onClick={() => setActiveVideoModal(null)}
-                  className="p-1.5 rounded bg-neutral-800 hover:bg-red-600 text-neutral-300 hover:text-white transition-colors cursor-pointer"
+                  className="p-1.5 rounded bg-neutral-800 hover:bg-neutral-700 text-neutral-300 hover:text-white transition-colors cursor-pointer"
                 >
                   <X size={16} />
                 </button>

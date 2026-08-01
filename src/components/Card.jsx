@@ -2,6 +2,7 @@ import { memo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCompare } from "../context/CompareContext";
 import { GitCompare } from "lucide-react";
+import { getOptimizedThumbnail } from "../utils/imageOptimizer";
 
 const Card = memo(function Card({ product = {} }) {
   console.log("Card render", product._id || product.id);
@@ -11,19 +12,20 @@ const Card = memo(function Card({ product = {} }) {
   const brand = product.brand || "Titan";
   const name = product.model_name || product.name || "Titan Karishma Analog Black Dial Men's Watch";
 
-  let image = typeof product.image === "string" ? product.image : product.image?.url;
-  if (!image && product.images && product.images.length > 0) {
+  let rawImage = typeof product.image === "string" ? product.image : product.image?.url;
+  if (!rawImage && product.images && product.images.length > 0) {
     const mainImg = product.images.find(img => typeof img === "object" && img?.is_main);
     if (mainImg?.url) {
-      image = mainImg.url;
+      rawImage = mainImg.url;
     } else {
       const first = product.images[0];
-      image = typeof first === "string" ? first : first?.url;
+      rawImage = typeof first === "string" ? first : first?.url;
     }
   }
-  if (!image) {
-    image = product.image_url || product.img || "https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcTks2A_m02ftOVE8GfuqOanpR67Uo4KWA0cz2eOFsPXIvvB2ZaA1MHkartj-fLktkBPf3_8YX2wtaFpUkzzeAcJpYeQeIqy-Irp6DoGb4BgH_8H128dmNPTlg";
+  if (!rawImage) {
+    rawImage = product.image_url || product.img || "https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcTks2A_m02ftOVE8GfuqOanpR67Uo4KWA0cz2eOFsPXIvvB2ZaA1MHkartj-fLktkBPf3_8YX2wtaFpUkzzeAcJpYeQeIqy-Irp6DoGb4BgH_8H128dmNPTlg";
   }
+  const image = getOptimizedThumbnail(rawImage, 400);
 
   let price = product.price;
   if (typeof product.price === "number") {
